@@ -9,10 +9,15 @@
 import os
 import re
 import sys
+# This script supports a "dry-run" mode.
+# In dry-run mode, the script will print the commands instead of executing them.
+# This allows the user to test what will happen without making any changes to the system.
 
 def main():
-    mode = input("Run in dry-run mode? (Y/N): ").strip().upper()
-    dry_run = True if mode == "Y" else False
+# dry_run controls whether commands are executed or just displayed
+# True = print commands only (no changes made)
+# False = execute commands on the system
+    dry_run = False
 
     for line in sys.stdin:
 
@@ -30,6 +35,7 @@ def main():
         groups = fields[4].split(',')
 
         print("==> Creating account for %s..." % username)
+# If dry_run is enabled, print the command instead of creating the user
         cmd = "/usr/sbin/adduser --disabled-password --gecos '%s' %s" % (gecos, username)
 
         if dry_run:
@@ -37,14 +43,16 @@ def main():
         else:
             os.system(cmd)
 
+# If dry_run is enabled, print the password command instead of executing it
         print("==> Setting the password for %s..." % username)
+# If dry_run is enabled, print the command instead of creating the user
         cmd = "/bin/echo -ne '%s\n%s' | /usr/bin/sudo /usr/bin/passwd %s" % (password, password, username)
 
         if dry_run:
             print("DRY RUN:", cmd)
         else:
             os.system(cmd)
-
+# If dry_run is enabled, print the group assignment command instead of executing it
         for group in groups:
 
             if group == '-':
@@ -53,6 +61,7 @@ def main():
                 continue
 
             print("==> Assigning %s to the %s group..." % (username, group))
+# If dry_run is enabled, print the command instead of creating the user
             cmd = "/usr/sbin/adduser %s %s" % (username, group)
 
             if dry_run:
